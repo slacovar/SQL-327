@@ -1,0 +1,36 @@
+/*officer_info*/
+CREATE VIEW officer_info AS
+SELECT rank_name, CONCAT(first_name, ' ', last_name) AS name, age
+FROM officers JOIN ranks ON ranks.rank_id = officers.rank_id
+ORDER BY officers.rank_id DESC;
+
+/*people_below_avg_age*/
+CREATE VIEW people_below_avg_age AS
+SELECT CONCAT(last_name, ', ', first_name) AS name, race_name, gender, age, height, weight
+FROM people JOIN races ON races.race_id = people.race_id
+WHERE age < (
+	SELECT AVG(age)
+    FROM people)
+ORDER BY age;
+
+/*victim_of_crimes*/
+CREATE VIEW victim_of_crimes AS
+SELECT CONCAT(first_name, ' ', last_name) as name, crime_role_name, crime_type_name, crime_datetime
+FROM people JOIN involvement ON people.person_id = involvement.person_id
+			JOIN crime_roles ON involvement.crime_role_id = crime_roles.crime_role_id
+            JOIN crimes on involvement.crime_id = crimes.crime_id
+            JOIN crime_types ON crimes.crime_type_id = crime_types.crime_type_id
+WHERE crime_role_name = 'Victim';
+
+/*district_crime_count*/
+CREATE VIEW district_crime_count AS
+SELECT district_name, COUNT(crime_id) as crime_count
+FROM crimes JOIN districts ON crimes.district_id = districts.district_id
+GROUP BY district_name;
+
+/*crime_list_timeframe*/
+CREATE VIEW crime_list_timeframe AS
+SELECT crime_datetime, address, city, zipcode, district_name, crime_type_name, disposition
+FROM crimes JOIN crime_types ON crimes.crime_type_id = crime_types.crime_type_id
+			JOIN districts ON crimes.district_id = districts.district_id
+WHERE crime_datetime > '2019-04-01 00:00:00' AND crime_datetime < '2019-04-03 00:00:00';
